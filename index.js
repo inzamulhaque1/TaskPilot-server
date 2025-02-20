@@ -13,7 +13,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // Vite's default port
+    origin: "https://job-portal-bb2fa.web.app", // Vite's default port
     methods: ["GET", "POST", "PUT", "DELETE"]
   }
 });
@@ -33,7 +33,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
     const db = client.db("TaskPilot");
     const usersCollection = db.collection("users");
     const tasksCollection = db.collection("tasks");
@@ -141,7 +141,7 @@ app.get("/tasks", async (req, res) => {
     
 
     // Ping MongoDB to confirm connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } catch (error) {
     console.error("MongoDB connection error:", error);
