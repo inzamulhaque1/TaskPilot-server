@@ -1,5 +1,5 @@
 const express = require("express");
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion } = require("mongodb");
 const cors = require("cors");
 const dotenv = require("dotenv");
 
@@ -20,17 +20,39 @@ const client = new MongoClient(uri, {
         version: ServerApiVersion.v1,
         strict: true,
         deprecationErrors: true,
-    }
+    },
 });
+
 async function run() {
     try {
-        // await client.connect();
-        const usersCollection = client.db("TaskPilot").collection("users")
+        // Connect to MongoDB (keep the connection open)
+        await client.connect();
+        const usersCollection = client.db("TaskPilot").collection("users");
 
-        app.get('/users', async (req, res) => {
-            const result = await usersCollection.find().toArray()
-            res.send(result)
-        })
+        // ! --------------------------- USERS ---------------------------
+
+        app.get("/users", async (req, res) => {
+            const result = await usersCollection.find().toArray();
+            res.send(result);
+        });
+
+        app.post("/users", async (req, res) => {
+            const userData = req.body; // Get user data from the request body
+            try {
+
+                const existingUser = await usersCollection.findOne({ uid: userData.uid });
+                if (existingUser) {
+                    return res.status(200).send({ message: "User already exists", user: existingUser });
+                }
+
+
+                const result = await usersCollection.insertOne(userData);
+                res.status(201).send({ message: "User created successfully", result });
+            } catch (error) {
+                console.error("Error saving user:", error);
+                res.status(500).send({ message: "Failed to save user", error: error.message });
+            }
+        });
 
 
 
@@ -40,16 +62,19 @@ async function run() {
 
 
 
+        
 
 
 
 
 
+        // Ping MongoDB to confirm connection
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    } finally {
-        // await client.close();
+    } catch (error) {
+        console.error("MongoDB connection error:", error);
     }
+    // Note: We no longer close the client here to keep the connection alive
 }
 run().catch(console.dir);
 
