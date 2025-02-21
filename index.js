@@ -13,13 +13,28 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://job-portal-bb2fa.web.app", // Vite's default port
-    methods: ["GET", "POST", "PUT", "DELETE"]
-  }
+    origin: [
+      "http://localhost:5173",  // Allow local frontend
+      "https://job-portal-bb2fa.web.app"  // Allow deployed frontend
+    ],
+    methods:["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  },
 });
 
+const allowedOrigins = [
+  "http://localhost:5173",  // Local development
+  "https://job-portal-bb2fa.web.app"  // Deployed frontend
+];
+
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true, // Allow cookies and authentication headers
+  })
+);
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.k3e8u.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
